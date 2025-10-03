@@ -202,36 +202,36 @@ tkey_handle_t key = tkey_create_default(event_cb, detect_cb, user_data);
 
 void timer_interrupt(void) // 在定时器中断中周期性调用
 {
-    tkey_handler(key);
+    tkey_handler(&key);
 }
 ```
 `tkey_mutli_handler`函数可以处理多个`相同配置`的按键对象，多个按键对象通过按键对象句柄的数组传入`tkey_mutli_handler`函数
 ```c
-TKEY_HANDLE_ARRAY_DEFINE(key, 3);
-key[0] = tkey_create_default(config); // 相同配置
-key[1] = tkey_create_default(config);
-key[2] = tkey_create_default(config);
+TKEY_HANDLE_ARRAY_DEFINE(key_array, 3);
+key_array[0] = tkey_create_default(config); // 相同配置
+key_array[1] = tkey_create_default(config);
+key_array[2] = tkey_create_default(config);
 
 void timer_interrupt(void)
 {
-    tkey_mutli_handler(key, sizeof(key) / sizeof(tkey_handle_t));
+    tkey_mutli_handler(key_array, sizeof(key_array) / sizeof(tkey_handle_t));
 }
 ```
 如果需要不同配置的按键，需要为不同配置的按键调用`tkey_handler`函数处理
 ```c
-TKEY_HANDLE_ARRAY_DEFINE(key, 3);
-key[0] = tkey_create_default(config1); // 不同配置
-key[1] = tkey_create_default(config2);
-key[2] = tkey_create_default(config2);
+TKEY_HANDLE_ARRAY_DEFINE(key_array, 3);
+key_array[0] = tkey_create_default(config_1); // 不同配置
+key_array[1] = tkey_create_default(config_2);
+key_array[2] = tkey_create_default(config_2);
 
 void timer_interrupt1(void)
 {
-    tkey_handler(key[0]);
+    tkey_handler(&key_array[0]);
 }
 
 void timer_interrupt2(void)
 {
-    tkey_handler(key[1]);
-    tkey_handler(key[2]);
+    tkey_handler(&key_array[1]);
+    tkey_handler(&key_array[2]);
 }
 ```

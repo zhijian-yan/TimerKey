@@ -13,6 +13,8 @@ extern "C" {
 
 #define tkey_malloc(size) malloc(size)
 #define tkey_free(ptr) free(ptr)
+#define TKEY_MAX_TICKS (0xFFFF)
+#define TKEY_MAX_COUNT (0xFF)
 #define TKEY_HANDLE_ARRAY_DEFINE(name, num) tkey_handle_t name[num] = {0}
 
 /**
@@ -39,7 +41,8 @@ extern "C" {
  * includes release, release after long press, and release after multiple
  * presses
  */
-typedef enum {
+typedef enum
+{
     TKEY_EVENT_PRESS = 0x01,
     TKEY_EVENT_RELEASE = 0x02,
     TKEY_EVENT_LONG_PRESS = 0x04,
@@ -86,7 +89,8 @@ typedef int (*tkey_detect_cb_t)(void *user_data);
 /**
  * @brief Configuration of key object
  */
-typedef struct {
+typedef struct
+{
     tkey_event_cb_t event_cb; /* Callback function for handling key events */
     tkey_detect_cb_t
         detect_cb;           /* Callback function for detecting key presses */
@@ -125,16 +129,16 @@ tkey_handle_t tkey_create(tkey_config_t *config);
 /**
  * @brief Delete key object
  *
- * @param key Handle to the key object
+ * @param pkey Pointer to the key handle
  */
-void tkey_delete(tkey_handle_t key);
+void tkey_delete(tkey_handle_t *pkey);
 
 /**
  * @brief key handler, this handler should be called at the configured frequency
  *
- * @param key Handle to the key object
+ * @param pkey Pointer to the key handle
  */
-void tkey_handler(tkey_handle_t key);
+void tkey_handler(tkey_handle_t *pkey);
 
 /**
  * @brief Multiple key handlers, these keys should be detected at the same
