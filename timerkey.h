@@ -16,6 +16,7 @@ extern "C" {
 #define TKEY_MAX_TICKS (0xFFFF)
 #define TKEY_MAX_COUNT (0xFF)
 #define TKEY_HANDLE_ARRAY_DEFINE(name, num) tkey_handle_t name[num] = {0}
+#define TKEY_HANDLE_ARRAY_GET_NUM(name) (sizeof(name) / sizeof(tkey_handle_t))
 
 /**
  * @brief Enumeration of key events
@@ -41,8 +42,7 @@ extern "C" {
  * includes release, release after long press, and release after multiple
  * presses
  */
-typedef enum
-{
+typedef enum {
     TKEY_EVENT_PRESS = 0x01,
     TKEY_EVENT_RELEASE = 0x02,
     TKEY_EVENT_LONG_PRESS = 0x04,
@@ -89,8 +89,7 @@ typedef int (*tkey_detect_cb_t)(void *user_data);
 /**
  * @brief Configuration of key object
  */
-typedef struct
-{
+typedef struct {
     tkey_event_cb_t event_cb; /* Callback function for handling key events */
     tkey_detect_cb_t
         detect_cb;           /* Callback function for detecting key presses */
