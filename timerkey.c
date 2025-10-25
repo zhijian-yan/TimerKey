@@ -3,6 +3,8 @@
 
 #include "timerkey.h"
 
+#define TKEY_MAX_TICKS (0xFFFF)
+#define TKEY_MAX_COUNT (0xFF)
 #define TKEY_STATE_UNPRESSED 0
 #define TKEY_STATE_PRESSED 1
 
@@ -180,4 +182,16 @@ void tkey_set_enabled(tkey_handle_t key, uint8_t enabled) {
     if (!key)
         return;
     key->enabled = enabled;
+}
+
+uint16_t tkey_get_pressed_ticks(tkey_handle_t key) {
+    if (!key)
+        return 0;
+    return key->pressed_ticks;
+}
+
+uint16_t tkey_get_multi_press_ticks(tkey_handle_t key) {
+    if (!key)
+        return 0;
+    return key->multi_press_ticks;
 }

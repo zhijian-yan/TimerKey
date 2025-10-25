@@ -13,8 +13,6 @@ extern "C" {
 
 #define tkey_malloc(size) malloc(size)
 #define tkey_free(ptr) free(ptr)
-#define TKEY_MAX_TICKS (0xFFFF)
-#define TKEY_MAX_COUNT (0xFF)
 #define TKEY_HANDLE_ARRAY_DEFINE(name, num) tkey_handle_t name[num] = {0}
 #define TKEY_HANDLE_ARRAY_GET_NUM(name) (sizeof(name) / sizeof(tkey_handle_t))
 
@@ -202,6 +200,20 @@ void tkey_set_multi_press_interval(tkey_handle_t key,
  * @param enabled True to enable, false to disable
  */
 void tkey_set_enabled(tkey_handle_t key, uint8_t enabled);
+
+/**
+ * @brief Get pressed ticks
+ *
+ * @param key Handle to the key object
+ */
+uint16_t tkey_get_pressed_ticks(tkey_handle_t key);
+
+/**
+ * @brief Get multiple press ticks
+ *
+ * @param key Handle to the key object
+ */
+uint16_t tkey_get_multi_press_ticks(tkey_handle_t key);
 
 #ifdef __cplusplus
 }
