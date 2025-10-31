@@ -1,14 +1,14 @@
-# TimerKey
-## 跨平台的按键检测库，基于定时器实现，简单易用
+# tickey
+## 跨平台的按键检测库，基于tick实现，简单易用
 # 特性
-- 支持检测短按、长按、双击、连续按下等状态
-- 由定时器驱动，仅需50Hz低频就可以完成工作
+- 支持检测短按、长按、双击、连击等状态
+- 底层由tick驱动，tick时长可自由设置
 - 采用面向对象的思想进行封装
-- 硬件无关，跨平台，且无需第三方依赖
-- C语言设计
+- 硬件无关，跨平台，无第三方依赖
+- 资源延迟删除的安全设计
 
 # 移植
-- **TimerKey**的代码为C语言设计，支持C++环境，移植无需其他步骤，直接将源代码添加到项目中即可
+- **tickey**的代码为C语言设计，支持C++环境，移植无需其他步骤，直接将源代码添加到项目中即可
 - 对象的创建默认使用C语言标准库的`malloc`函数，如有特殊的内存分配需求，可以将头文件中`tkey_malloc`和`tkey_free`宏替换为项目中所使用的内存分配函数
 
 # 使用
@@ -16,7 +16,9 @@
 创建一个按键对象并初始化对象，可以选择创建默认按键对象或者自定义按键对象
 ### 创建默认按键对象
 调用`tkey_create_default`函数创建默认按键对象
-
+```c
+tkey_handle_t key = tkey_create_default(tkey_event_cb, tkey_detect_cb, user_data);
+```
 默认按键对象的属性如下:
 - 按键扫描处理函数的工作频率:`50Hz`
 - 去抖时间:`1 tick` (20ms@50Hz)
@@ -25,7 +27,20 @@
 - 按键按下时电平:`0` (低电平)
 ### 创建自定义按键对象
 调用`tkey_create`函数创建自定义按键对象，使用`tkey_config_t`结构体初始化按键对象
+```c
+tkey_config_t tkey_config = 
+{
+    event_cb = tkey_event_cb,
+    detect_cb = tkey_detect_cb,
+    user_data = user_data,
+    hold_ticks = 25,
+    debounce_ticks = 1,
+    multi_press_interval_ticks = 15,
+    pressed_level = 0,
+};
 
+tkey_handle_t key = tkey_create(&tkey_config);
+```
 结构体参数如下:
 - `event_cb`:事件回调函数
 - `detect_cb`:检测回调函数
@@ -35,8 +50,10 @@
 - `multi_press_interval_ticks`:连续按下间隔时间
 - `pressed_level`:按键按下时电平
 ### 创建按键对象句柄数组
-使用`TKEY_HANDLE_ARRAY_DEFINE(name, num)`宏创建零初始化的按键对象句柄的数组，`name`是数组名，`num`是数组中按键对象句柄的个数
-
+使用`TKEY_HANDLE_ARRAY_DEFINE(name, num)`宏定义零初始化的按键对象句柄的数组，`name`是数组名，`num`是数组中按键对象句柄的个数
+```c
+TKEY_HANDLE_ARRAY_DEFINE(key, 3); // 定义数组key，包含3个对象句柄
+```
 按键对象句柄用来接收`tkey_create_default`函数或者`tkey_create`函数返回的按键对象，数组可以传入`tkey_mutli_handler`处理程序来对多个按键对象进行检测
 ## 2 编写回调函数
 ### 检测回调函数
@@ -196,13 +213,19 @@ void tkey_event_cb(tkey_handle_t key, tkey_event_t event, uint8_t multi_press_co
 }
 ```
 ## 3 周期性调用处理程序
-初始化完成后需要周期性地调用`tkey_handler`函数处理按键的扫描事件,`tkey_handler`函数只能处理一个按键对象
+初始化完成后需要周期性地调用`tkey_handler`函数处理按键的扫描事件，`tkey_handler`函数只能处理一个按键对象
 ```c
-tkey_handle_t key = tkey_create_default(event_cb, detect_cb, user_data);
-
-void timer_interrupt(void) // 在定时器中断中周期性调用
+void timer_interrupt(void) // 在定时器中断中周期性调用，定时周期20ms@50Hz
 {
     tkey_handler(&key);
+}
+```
+或者简单地使用循环周期性地调用
+```c
+while(1)
+{
+    tkey_handler(&key);
+    delay_ms(20);
 }
 ```
 `tkey_mutli_handler`函数可以处理多个`相同配置`的按键对象，多个按键对象通过按键对象句柄的数组传入`tkey_mutli_handler`函数
@@ -211,10 +234,13 @@ TKEY_HANDLE_ARRAY_DEFINE(key_array, 3);
 key_array[0] = tkey_create_default(config); // 相同配置
 key_array[1] = tkey_create_default(config);
 key_array[2] = tkey_create_default(config);
-
-void timer_interrupt(void)
+```
+使用`TKEY_HANDLE_ARRAY_GET_NUM(name)`获取按键数组的大小，同时需要注意`tkey_mutli_handler`函数的第一个参数传入数组名即可，无需`&`符号
+```c
+while(1)
 {
-    tkey_mutli_handler(key_array, sizeof(key_array) / sizeof(tkey_handle_t));
+    tkey_mutli_handler(key_array, TKEY_HANDLE_ARRAY_GET_NUM(key_array));
+    delay_ms(20);
 }
 ```
 如果需要不同配置的按键，需要为不同配置的按键调用`tkey_handler`函数处理
